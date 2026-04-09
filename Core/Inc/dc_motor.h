@@ -31,4 +31,5 @@ typedef struct{
 void motor_init(motor_t *motor);
 void motor_measure_rpm(motor_t *motor, float Ts);
 void motor_set_rpm(motor_t *motor, float rpm, float Ts);
+void motor_set_raw_pwm(motor_t *motor, uint32_t duty, uint32_t channel);
 #endif /* INC_DC_MOTOR_H_ */

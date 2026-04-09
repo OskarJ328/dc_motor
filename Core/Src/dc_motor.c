@@ -38,7 +38,7 @@ static int32_t encoder_get_delta_cnt(motor_t *motor){
 void motor_measure_rpm(motor_t *motor, float Ts){
     int32_t delta = encoder_get_delta_cnt(motor);
     float revolutions = (float)delta / motor->encoder_resolution;
-    motor->measured_rpm = (revolutions / Ts) * 60.0f;
+    motor->measured_rpm = (revolutions / Ts) * 30.0f;
 }
 
 void motor_init(motor_t *motor){
@@ -82,4 +82,8 @@ void motor_set_rpm(motor_t *motor, float rpm, float Ts){
         pwm_set_duty(motor, 0, motor->pwm_channel_A);
         pwm_set_duty(motor, duty, motor->pwm_channel_B);
     }
+}
+
+void motor_set_raw_pwm(motor_t *motor, uint32_t duty, uint32_t channel){
+    pwm_set_duty(motor, duty, channel);
 }
