@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "dc_motor.h"
+#include "my_uart.h"
 #include "stdio.h"
 /* USER CODE END Includes */
 
@@ -56,15 +57,16 @@ motor_t motor1 = {
   .encoder_resolution = 700,
   .measured_rpm = 0,
   .max_rpm = 251.0f,
-  .regulator_Kp = 0.2f,
-  .regulator_Ki = 0,
+  .regulator_Kp = 1.0f,
+  .regulator_Ki = 0.2f,
   .integral = 0
 };
 
-uint32_t Ts_ms = 10;
+uint32_t Ts_ms = 100;
 uint32_t curr_time = 0;
 uint32_t prev_time = 0;
 uint32_t cnt = 0;
+uint8_t curr_rpm = 30;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,12 +78,24 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void test1(void){
-  motor_measure_rpm(&motor1, (float)Ts_ms / 1000);
+  motor_measure_rpm(&motor1, (float)Ts_ms / 1000.0f);
   if(cnt > 200){
     printf("rpm = %f\n", motor1.measured_rpm);
     cnt = 0;
   }
   cnt++;
+}
+
+void test2(uint8_t duty){
+  motor_set_raw_pwm(&motor1, 0, motor1.pwm_channel_B);
+  motor_set_raw_pwm(&motor1, duty, motor1.pwm_channel_A);
+  motor_measure_rpm(&motor1, (float)Ts_ms / 1000.0f);
+  printf("rpm = %f\n", motor1.measured_rpm);
+}
+
+void test3(float rpm){
+  motor_set_rpm(&motor1, rpm, (float)Ts_ms / 1000.0f);
+  printf("rpm = %.2f\n", motor1.measured_rpm);
 }
 /* USER CODE END 0 */
 
@@ -118,6 +132,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  my_uart_start_receiving();
   motor_init(&motor1);
   /* USER CODE END 2 */
 
@@ -125,11 +140,15 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+  curr_time = HAL_GetTick();
+  if(curr_time - prev_time > Ts_ms){
+    prev_time = curr_time;
+    test3(-50);
+    //test2();
+    //test3();
+  }
     /* USER CODE END WHILE */
-    curr_time = HAL_GetTick();
-    if(curr_time - prev_time >= Ts_ms){
-      test1();
-    }
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
